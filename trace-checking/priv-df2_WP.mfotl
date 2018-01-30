@@ -1,0 +1,136 @@
+--------------INT DGH------------------
+
+DGH(tot.content) = 
+
+	f_AMOUNT.amt_1(x): {
+		x<100 -> x
+		x>=100 & x<1000 -> 500
+		x>=1000 -> 1500
+	}
+
+	f_AMOUNT.amt_2(x): {
+		x<100 -> 100
+		x=500 OR x=1500 -> 1000
+	}
+
+P1={ds1,tot,[ctx.user='u1', ONCE[0,4000] count.content>700], (0,2)}
+
+tot('ds1',c1, c1org) AND c1org<100 AND NOT c1=100 
+IMPLIES NOT (
+(ONCE[0,*] context('u1')) AND
+(NOT EXISTS cx1. (context(cx1) AND NOT cx1='u1') SINCE[0,*] context('u1')) AND
+(ONCE[0,4000] count('ds1',c2) AND c2 > 770)
+)
+
+tot('ds1',c1, c1org) AND c1org>=100 AND NOT c1=1000 
+IMPLIES NOT (
+(ONCE[0,*] context('u1')) AND
+(NOT EXISTS cx1. (context(cx1) AND NOT cx1='u1') SINCE[0,*] context('u1')) AND
+(ONCE[0,4000] count('ds1',c2) AND c2 > 770)
+)
+
+P2={ds1,tot,[ctx.user='u1', ONCE[0,4000] count.content>700], (0,1)}
+
+tot('ds1',c1, c1org) AND c1org>=100 AND c1org<1000 NOT c1=500 
+IMPLIES NOT (
+(ONCE[0,*] context('u1')) AND
+(NOT EXISTS cx1. (context(cx1) AND NOT cx1='u1') SINCE[0,*] context('u1')) AND
+(ONCE[0,4000] count('ds1',c2) AND c2 > 770)
+)
+
+tot('ds1',c1, c1org) AND c1org>=1000 AND NOT c1=1500 
+IMPLIES NOT (
+(ONCE[0,*] context('u1')) AND
+(NOT EXISTS cx1. (context(cx1) AND NOT cx1='u1') SINCE[0,*] context('u1')) AND
+(ONCE[0,4000] count('ds1',c2) AND c2 > 770)
+)
+
+------------ GENERIC CASE --------------
+
+	f_a1_1(x): D_a1_0 -> D_a1_1
+
+	...
+
+	f_a1_{m_1}(x): D_a1_{m_1-1} -> D_a1_{m-1}
+
+	...
+	...
+	...
+
+	f_an_1(x): D_an_0 -> D_an_1
+
+	...
+
+	f_an_{m_n}: D_an_{m_n-1} -> D_an_{m_n}
+
+VCP=(ds, s, [Once[T1_1, T2_1](f_1 OP_f_1 v_f_1), ..., Once[T1_p, T1_p](f_p OP_f_p v_f_p), f_q OP_f_q v_f_q, ..., f_w OP_f_w v_f_w], (l_a1, ..., l_an))
+  
+  ||
+  ||
+ _||_
+ \  /
+  \/ 
+  
+s('ds',a1, ..., an, a1_org, ..., an_org) AND (NOT f_a1_{l_a1}(f_a1_{l_a1-1}(...f_a1_1(a1_org)...)) = a1  AND NOT f_a2_{l_a2}(f_a2_{l_a2-1}(...f_a2_1(a2_org)...)) = a2 OR ... OR NOT f_an_{l_an}(f_an_{l_an-1}(...f_an_1(an_org)...)) = an )
+IMPLIES NOT (
+(Once[T1_1, T2_1](f_1 OP_f_1 v_f_1)) AND
+...
+(Once[T1_p, T1_p](f_p OP_f_p v_f_p)) AND
+(ONCE[0,*] f_q OP_f_q v_f_q AND
+(NOT EXISTS v'_f_q. (NOT(f_q OP_f_q v'_f_q)) SINCE[0,*] f_q OP_f_q v_f_q) AND
+...
+(ONCE[0,*] f_w OP_f_w v_f_w AND
+(NOT EXISTS v'_f_w. (NOT(f_w OP_f_w v'_f_w)) SINCE[0,*] f_w OP_f_w v_f_w)
+)
+
+--------------STRING  DGH------------------
+
+DGH(tot.content) = 
+
+	f0(x): {
+
+		x="shoes:*" -> "shoes"
+		x="suit:*" -> "suit"
+	}
+
+	f1(x): {
+		x=* -> "item"
+	}
+
+P1={ds1,tot,[ctx.user='u1', ONCE[0,4000] count.content>700], (0,2)}
+
+tot('ds1',c1, c1org) AND NOT c1='item' 
+IMPLIES NOT (
+(ONCE[0,*] context('u1')) AND
+(NOT EXISTS cx1. (context(cx1) AND NOT cx1='u1') SINCE[0,*] context('u1')) AND
+(ONCE[0,4000] count('ds1',c2) AND c2 > 770)
+)
+
+P2={ds1,tot,[ctx.user='u1', ONCE[0,4000] count.content>700], (0,1)}
+
+tot('ds1',c1, c1org) AND c1org='shoes:*' AND NOT c1='shoes' 
+IMPLIES NOT (
+(ONCE[0,*] context('u1')) AND
+(NOT EXISTS cx1. (context(cx1) AND NOT cx1='u1') SINCE[0,*] context('u1')) AND
+(ONCE[0,4000] count('ds1',c2) AND c2 > 770)
+)
+
+tot('ds1',c1, c1org) AND c1org='suit:*' AND NOT c1='suit'
+IMPLIES NOT (
+(ONCE[0,*] context('u1')) AND
+(NOT EXISTS cx1. (context(cx1) AND NOT cx1='u1') SINCE[0,*] context('u1')) AND
+(ONCE[0,4000] count('ds1',c2) AND c2 > 770)
+)
+
+
+-------------------------DSEP----------------
+
+P2={ds1,AMOUNT,[CTX.user='u2', ONCE[0,30000] COUNT.tCount>3]}
+
+
+AMOUNT('ds1',a) 
+IMPLIES NOT (
+(ONCE[0,*] CTX('u2')) AND
+(NOT EXISTS cx1. (CTX(cx1) AND NOT cx1='u1') SINCE[0,*] CTX('u2')) AND
+(ONCE[0,30000] COUNT('ds1',c) AND c > 2)
+)

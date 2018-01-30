@@ -1,0 +1,13 @@
+*.class
+target
+*.log
+.idea
+*.iml
+*.log
+*.aux
+*.pdf
+*.synctex.gz
+*.bbl
+*.blg
+*.txt
+experiments/
